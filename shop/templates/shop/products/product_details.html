@@ -1,0 +1,169 @@
+{% extends 'shop/layouts/main.html' %}
+{% block title %}
+ShopKart | Online shopping
+{% endblock title %}
+
+{% block content %}
+<section class="bg-light py-4 my-5">
+    <div class="container ">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="mb-3">{{products}} Details</h4>
+                <hr style="border-color:#b8bfc2;">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{% url 'collections' products.category.name  %}">Collections</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{products}}</li>
+                    </ol>
+                </nav>
+                {% include 'shop/inc/messages.html' %}
+            </div>
+            <div class="col-4 my-3 ">
+                <div class="card  p-2 pic-box ">
+                    {% if products.trending %}
+                    <div class="hot">hot</div>
+                    {% endif %}
+                    <img src="{{products.product_image.url}}" class="card-image-top" alt="{{products}}">
+                </div>
+            </div>
+            <div class="col-8 my-3">
+                <h4 class="text-success">{{products | upper}}</h4>
+                <p>{{products.vendor}}</p>
+                <p>{{products.description}}</p>
+                <h6 class="my-2 text-danger">Current Price : Rs.<s>{{products.original_price}}</s></h6>
+                <h5 class="my-2 text-primary">Offer Price : Rs.{{products.selling_price}}</h5>
+                <div class="my-3">
+                    {% if products.quantity > 0%}
+                    
+                    <input type="hidden" value="{{products.id}}" id="pid">
+
+                    <p>
+                    <div class="input-group" style="width:150px">
+                        <button class="input-group-text bg-success text-light" id="btnMinus"><i class="fa fa-minus"></i></button>
+                        <input type="text" name="qty" id="txtQty" value="1" class="form-control text-center">
+                        <button class="input-group-text bg-success text-light" id="btnPlus"><i class="fa fa-plus"></i></button>
+                    </div>
+                    </p>
+                    <button class=" btn btn-primary" id="btncart"><i class="fa fa-shopping-cart"></i>add to card</button>
+                    {%else%}
+                    <button class=" btn btn-secondary"><i class="fa fa-minus"></i>Out of stock</button>
+                    {%endif%}
+                    <button class="btn btn-danger" id="btnfav"><i class="fa fa-heart"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+    const btnplus = document.getElementById("btnPlus");
+    const btnMinus = document.getElementById("btnMinus");
+    const txtQty = document.getElementById("txtQty");
+    const pid = document.getElementById("pid");
+    const btncart = document.getElementById("btncart");
+    const btnfav = document.getElementById("btnfav");
+
+    // Increment quantity
+    btnplus.addEventListener("click", function () {
+        let qty = parseInt(txtQty.value, 10);
+        qty = isNaN(qty) ? 0 : qty;
+        if (qty < 10) {
+            qty++;
+            txtQty.value = qty;
+        }
+    });
+
+    // Decrement quantity
+    btnMinus.addEventListener("click", function () {
+        let qty = parseInt(txtQty.value, 10);
+        qty = isNaN(qty) ? 0 : qty; // Fixed typo
+        if (qty > 1) {
+            qty--;
+            txtQty.value = qty;
+        }
+    });
+
+    // Add to cart
+    btncart.addEventListener("click", function () {
+        let qty = parseInt(txtQty.value, 10);
+        qty = isNaN(qty) ? 0 : qty;
+
+        if (qty > 0) {
+            if (!pid.value) {
+                alert("Product ID is missing!");
+                return;
+            }
+
+            let postobj = {
+                product_qty: qty,
+                pid: pid.value,
+            };
+            // console.log(postobj);
+
+            fetch("/addtocart", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": "{{ csrf_token }}", // Ensure this is rendered properly
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(postobj),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json(); // Fixed case-sensitive method
+                })
+                .then(data => {
+                    // 
+                    alert(data['status'])
+                })
+        } else {
+            alert("Please enter a valid quantity");
+        }
+    });
+
+
+
+    btnfav.addEventListener("click", function () {
+    const postobj = {
+        pid: pid.value, // Ensure `pid` is defined and accessible
+    };
+
+    fetch("/fav", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": "{{ csrf_token }}", // Ensure this CSRF token is set
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postobj),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Network error: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(data.status);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while adding to Favourite.");
+        });
+});
+
+});
+
+</script>
+
+{% endblock content %}
