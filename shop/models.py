@@ -15,6 +15,7 @@ class Category(models.Model):  # Consider renaming "Category" to "Category" for 
     description = models.TextField(max_length=500, null=False, blank=False)
     status = models.BooleanField(default=False, help_text="0-show,1-Hidden")
     created_at = models.DateTimeField(auto_now_add=True)
+    # price= models.IntegerField(max_length=200,null=False)
 
     def __str__(self):
         return self.name

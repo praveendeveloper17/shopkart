@@ -8,49 +8,63 @@ Registration | ShopKart
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <h4 class="mb-3">Cart items</h4>
+                <h4 class="mb-3">Cart Items</h4>
                 <hr style="border-color:#b8bfc2;">
             </div>
-           
+        </div>
 
-            <table class="table table-bordered">
-                <tr>
-                    <th>Image</th>
-                    <th>product name</th>
-                    <th>unit</th>
-                    <th>Quantity</th>
-                    <th>Amount</th>
-                    <th>remove</th>
-                </tr>
-                {% for item in carts%}
-                <tr>
-                    <td> <img src="{{item.product_image.url}}"  alt="{{item.product.name}}"></td>
-                    <td>{{item.product.name}}</td>
-                    <td>{{item.product.selling_price | stringformat:'d'}}</td>
-                    <td>{{item.product_qty}}</td>
-                    <td class="amt">{{item.total_cost  | stringformat:'d'}}</td>
-                    <td> <a href="{% url 'remove_cart' item.id %}" onclick="return confirm('Are you sure? to remove')" class="btn btn-danger btn-sm"> <i class="fa fa-trash"></i> remove</a></td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td colspan="2"><b>Total Amount</b></td>
-                    <td id="net">$</td>
-                </tr>
-            </table>
-
+        <!-- Responsive Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Image</th>
+                                <th>Product Name</th>
+                                <th>Unit Price (Rs)</th>
+                                <th>Quantity</th>
+                                <th>Amount (Rs)</th>
+                                <th>Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in carts %}
+                            <tr>
+                                <td>
+                                    <img src="{{ item.product_image.url }}" alt="{{ item.product.name }}" 
+                                         class="img-fluid mx-auto d-block" 
+                                         style="max-width: 100%; height: auto; max-height: 100px;">
+                                </td>
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.product.selling_price | stringformat:'d' }}</td>
+                                <td>{{ item.product_qty }}</td>
+                                <td class="amt">{{ item.total_cost | stringformat:'d' }}</td>
+                                <td>
+                                    <a href="{% url 'remove_cart' item.id %}" onclick="return confirm('Are you sure you want to remove this item?')" class="btn btn-danger btn-sm">
+                                        <i class="fa fa-trash"></i> Remove
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="4" class="text-end"><b>Total Amount:</b></td>
+                                <td id="net" colspan="2"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-
 <script>
-const nodes = document.querySelectorAll(".amt");
-const arr = Array.from(nodes);
-const res = arr.reduce((acc,curr)=>{
-    return acc += Number(curr.textContent)
-},0)
-document.getElementById('net').innerHTML='Rs : ' + res;
+    // Calculate the total amount
+    const nodes = document.querySelectorAll(".amt");
+    const amounts = Array.from(nodes);
+    const total = amounts.reduce((acc, curr) => acc + Number(curr.textContent), 0);
+    document.getElementById('net').textContent = 'Rs: ' + total.toLocaleString();
 </script>
+
 {% endblock content %}
